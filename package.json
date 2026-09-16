@@ -1,0 +1,28 @@
+{
+  "name": "my-space",
+  "version": "1.0.0",
+  "description": "个人空间动态网站",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.10.0",
+    "connect-flash": "^0.1.1",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.6.0",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "marked": "^18.0.10",
+    "multer": "^2.1.1",
+    "qrcode": "^1.5.4",
+    "sanitize-html": "^2.17.7",
+    "sharp": "^0.35.4"
+  }
+}

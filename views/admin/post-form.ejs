@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - 个人空间</title>
+  <link rel="icon" href="/uploads/avatar.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar scrolled">
+    <div class="container nav-container">
+      <a href="/admin" class="nav-logo">管理后台</a>
+      <ul class="nav-menu">
+        <li><a href="/admin" class="nav-link">仪表盘</a></li>
+        <li><a href="/admin/logout" class="nav-link nav-logout">退出</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="container" style="max-width:800px;">
+      <div class="page-header">
+        <h1 class="page-title"><%= post ? '编辑文章' : '发布文章' %></h1>
+        <a href="/admin" class="btn btn-outline btn-sm">← 返回</a>
+      </div>
+
+      <form method="POST" action="<%= post ? '/admin/post/' + post.id : '/admin/post' %>" enctype="multipart/form-data" style="background:var(--bg-card);padding:28px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+        <div class="form-group">
+          <label for="title">文章标题 *</label>
+          <input type="text" id="title" name="title" value="<%= post ? post.title : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tags">标签</label>
+          <input type="text" id="tags" name="tags" value="<%= post ? post.tags : '' %>" placeholder="用逗号分隔，例如：技术,生活,JavaScript">
+        </div>
+
+        <div class="form-group">
+          <label for="category">分类</label>
+          <input type="text" id="category" name="category" value="<%= post ? post.category : '' %>" placeholder="例如：技术笔记、生活随笔、网络安全" list="categoryList">
+          <datalist id="categoryList">
+            <option value="技术笔记"></option>
+            <option value="生活随笔"></option>
+            <option value="网络安全"></option>
+            <option value="Linux"></option>
+            <option value="网络工程"></option>
+            <option value="Web渗透"></option>
+          </datalist>
+        </div>
+
+        <div class="form-group">
+          <label for="series">系列</label>
+          <input type="text" id="series" name="series" value="<%= post ? post.series : '' %>" placeholder="例如：Linux入门系列、CTF刷题记（留空表示不属于任何系列）">
+        </div>
+
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="featured" name="featured" value="1" <%= (post && post.featured) ? 'checked' : '' %> style="width:auto;">
+          <label for="featured" style="margin:0;">推荐到首页轮播</label>
+        </div>
+
+        <div class="form-group">
+          <label>封面图片</label>
+          <% if (post && post.cover) { %>
+            <div style="margin-bottom:12px;">
+              <picture>
+                <source srcset="<%= webpOf(post.cover) %>" type="image/webp">
+                <img src="<%= post.cover %>" alt="封面预览" style="max-height:180px;border-radius:8px;">
+              </picture>
+            </div>
+          <% } %>
+          <input type="file" name="cover" accept="image/*">
+          <span class="help-text">或输入图片URL</span>
+          <input type="text" name="cover_url" value="<%= post ? post.cover : '' %>" placeholder="https://example.com/image.jpg">
+        </div>
+
+        <div class="form-group">
+          <label for="content">文章内容 *</label>
+          <span class="help-text">支持 Markdown 语法：**粗体**、# 标题、- 列表等</span>
+          <textarea id="content" name="content" required style="min-height:400px;"><%= post ? post.content : '' %></textarea>
+        </div>
+
+        <div style="display:flex;gap:12px;">
+          <button type="submit" class="btn btn-primary"><%= post ? '保存修改' : '发布文章' %></button>
+          <a href="/admin" class="btn btn-outline">取消</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container"><p>&copy; 2024 个人空间管理后台</p></div>
+  </footer>
+</body>
+</html>

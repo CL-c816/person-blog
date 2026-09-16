@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理员登录 - 个人空间</title>
+  <link rel="icon" href="/uploads/avatar.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);">
+  <div style="width:100%;max-width:400px;padding:20px;">
+    <div style="background:var(--bg-card);border-radius:var(--radius-lg);padding:36px;box-shadow:var(--shadow-lg);">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:flex;justify-content:center;margin-bottom:8px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+        <h2 style="margin-bottom:4px;">管理后台</h2>
+        <p style="color:var(--text-lighter);font-size:0.9rem;">请登录以继续</p>
+      </div>
+
+      <% if (locals.error_msg && error_msg.length > 0) { %>
+        <div style="background:var(--danger-light);color:var(--danger);padding:10px 16px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:0.9rem;">
+          <%= error_msg %>
+        </div>
+      <% } %>
+
+      <form method="POST" action="/admin/login">
+        <div class="form-group">
+          <label for="username">账号</label>
+          <input type="text" id="username" name="username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">登 录</button>
+      </form>
+
+      <p style="text-align:center;margin-top:16px;font-size:0.82rem;color:var(--text-lighter);">
+        账号: admin
+      </p>
+    </div>
+    <p style="text-align:center;margin-top:16px;">
+      <a href="/" style="color:var(--text-lighter);font-size:0.85rem;">← 返回首页</a>
+    </p>
+  </div>
+</body>
+</html>

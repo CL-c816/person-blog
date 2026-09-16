@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 - 个人空间</title>
+  <link rel="icon" href="/uploads/avatar.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/security-panel.css">
+</head>
+<body>
+  <nav class="navbar scrolled">
+    <div class="container nav-container">
+      <a href="/" class="nav-logo">返回站点</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="/admin" class="nav-link active">仪表盘</a></li>
+        <li><a href="/admin/post/new" class="nav-link">写文章</a></li>
+        <li><a href="/admin/logout" class="nav-link nav-logout">退出</a></li>
+      </ul>
+      <button class="nav-toggle" id="navToggle">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 模块快捷导航 -->
+  <div class="admin-jumpbar">
+    <div class="container admin-jumpbar-inner">
+      <a href="#posts" class="admin-jump">文章</a>
+      <a href="#announcements" class="admin-jump">公告</a>
+      <a href="#photos" class="admin-jump">照片</a>
+      <a href="#settings" class="admin-jump">设置</a>
+      <a href="#links" class="admin-jump">链接</a>
+      <a href="#projects" class="admin-jump">项目</a>
+      <a href="#security" class="admin-jump">安全</a>
+    </div>
+  </div>
+
+  <main class="main-content">
+    <div class="container">
+      <!-- 消息提示 -->
+      <% if (locals.success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success"><%= success_msg %></div>
+      <% } %>
+      <% if (locals.error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-error"><%= error_msg %></div>
+      <% } %>
+
+      <!-- 统计卡片 -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-value"><%= postCount %></div>
+          <div class="stat-card-label">文章总数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value"><%= photoCount %></div>
+          <div class="stat-card-label">照片总数</div>
+        </div>
+        <div class="stat-card stat-card-action">
+          <a href="/admin/post/new" class="btn btn-primary">写新文章</a>
+        </div>
+      </div>
+
+      
+      <!-- ========== 安全监控面板 ========== -->
+      <% if (locals.attackStats) { %>
+      <div class="security-panel" id="security">
+        <div class="security-panel-header">
+          <div class="security-panel-title">安全防护监控</div>
+          <span class="security-badge security-badge-active">防护已激活</span>
+        </div>
+
+        <div class="security-layers">
+          <span class="security-layer-tag l1">L1 UFW防火墙</span>
+          <span class="security-layer-tag l2">L2 Fail2Ban</span>
+          <span class="security-layer-tag l3">L3 Nginx限流</span>
+          <span class="security-layer-tag l4">L4 Helmet+限速</span>
+        </div>
+
+        <div class="security-stats-grid" style="margin-top:16px;">
+          <div class="security-stat-card">
+            <div class="security-stat-value danger"><%= attackStats.failedToday %></div>
+            <div class="security-stat-label">24h登录失败</div>
+          </div>
+          <div class="security-stat-card">
+            <div class="security-stat-value warning"><%= attackStats.lockedIPs.length %></div>
+            <div class="security-stat-label">当前锁定IP</div>
+          </div>
+          <div class="security-stat-card">
+            <div class="security-stat-value"><%= attackStats.totalBlocked %></div>
+            <div class="security-stat-label">历史可疑IP</div>
+          </div>
+        </div>
+
+        <% if (attackStats.lockedIPs.length > 0) { %>
+          <div style="margin-bottom:12px;">
+            <strong style="font-size:13px;color:var(--danger);">当前被锁定的IP:</strong>
+            <% attackStats.lockedIPs.forEach(function(item) { %>
+              <span class="security-ip-badge" style="margin-left:6px;color:var(--danger);"><%= item.ip %> (<%= item.attempts %>次)</span>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <% if (locals.recentAttempts && recentAttempts.length > 0) { %>
+          <table class="security-attempts-table">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>IP地址</th>
+                <th>用户名</th>
+                <th>结果</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentAttempts.forEach(function(attempt) { %>
+                <tr>
+                  <td><%= new Date(attempt.created_at + 'Z').toLocaleString('zh-CN') %></td>
+                  <td><span class="security-ip-badge"><%= attempt.ip %></span></td>
+                  <td><%= attempt.username || '-' %></td>
+                  <td>
+                    <% if (attempt.success) { %>
+                      <span class="security-status-ok">&#10003; 成功</span>
+                    <% } else { %>
+                      <span class="security-status-fail">&#10007; 失败</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="security-empty">暂无登录尝试记录，一切平安</div>
+        <% } %>
+      </div>
+      <% } %>
+
+      <!-- 文章管理 -->
+      <div class="admin-card collapsed" id="posts">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">文章管理</h2>
+          <a href="/admin/post/new" class="btn btn-sm btn-outline no-toggle">+ 新建</a>
+        </div>
+        <div class="admin-card-body">
+          <% if (posts.length === 0) { %>
+            <div class="empty-state"><p>还没有文章，去写一篇吧！</p></div>
+          <% } else { %>
+            <% posts.forEach(function(post) { %>
+              <div class="list-item">
+                <div class="list-item-info">
+                  <strong class="list-item-title"><%= post.title %></strong>
+                  <span class="list-item-meta">
+                    <%= new Date(post.created_at + 'Z').toLocaleDateString('zh-CN') %>
+                    &middot; <%= post.views %> 次阅读
+                  </span>
+                </div>
+                <div class="list-item-actions">
+                  <a href="/blog/<%= post.id %>" class="btn btn-sm btn-outline" target="_blank">查看</a>
+                  <a href="/admin/post/<%= post.id %>/edit" class="btn btn-sm btn-outline">编辑</a>
+                  <form method="POST" action="/admin/post/<%= post.id %>/delete" onsubmit="return confirm('确定删除这篇文章？')">
+                    <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- 公告管理 -->
+      <div class="admin-card collapsed" id="announcements">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">公告管理</h2>
+          <span class="admin-card-hint">置顶优先展示 · 3 天内自动标记 NEW</span>
+        </div>
+        <div class="admin-card-body">
+          <details class="collapse-form" open>
+            <summary>发布新公告</summary>
+            <form method="POST" action="/admin/announcement" class="collapse-form-body">
+              <div class="form-group">
+                <label>标题（可选，默认显示"公告"）</label>
+                <input type="text" name="title" placeholder="例如：站点维护通知">
+              </div>
+              <div class="form-group">
+                <label>内容</label>
+                <textarea name="content" rows="3" required placeholder="写一条想告诉访客的公告…"></textarea>
+              </div>
+              <label class="checkbox-label">
+                <input type="checkbox" name="pinned" value="1"> 置顶展示
+              </label>
+              <button type="submit" class="btn btn-primary btn-sm">发布公告</button>
+            </form>
+          </details>
+
+          <% if (locals.announcements && announcements.length === 0) { %>
+            <div class="empty-state"><p>还没有公告</p></div>
+          <% } else { %>
+            <% announcements.forEach(function(a) { %>
+              <div class="list-item">
+                <div class="list-item-info">
+                  <strong class="list-item-title"><%= a.title || '公告' %></strong>
+                  <span class="list-item-meta">
+                    <%= new Date(a.created_at + 'Z').toLocaleDateString('zh-CN') %>
+                    <% if (a.pinned) { %><span class="tag tag-pin">📌置顶</span><% } %>
+                    <% if (isNewAnnouncement(a.created_at)) { %><span class="tag tag-new">🆕NEW</span><% } %>
+                  </span>
+                </div>
+                <div class="list-item-actions">
+                  <form method="POST" action="/admin/announcement/<%= a.id %>/pin" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-outline"><%= a.pinned ? '取消置顶' : '置顶' %></button>
+                  </form>
+                  <a href="/admin/announcement/<%= a.id %>/edit" class="btn btn-sm btn-outline">编辑</a>
+                  <form method="POST" action="/admin/announcement/<%= a.id %>/delete" onsubmit="return confirm('确定删除这条公告？')" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- 照片上传 -->
+      <div class="admin-card collapsed" id="photos">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">上传照片</h2>
+        </div>
+        <div class="admin-card-body">
+          <form method="POST" action="/admin/photo/upload" enctype="multipart/form-data">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="photoTitle">照片标题（可选）</label>
+                <input type="text" id="photoTitle" name="title" placeholder="给照片取个名字吧">
+              </div>
+              <div class="form-group">
+                <label for="photoFile">选择图片</label>
+                <input type="file" id="photoFile" name="photo" accept="image/*" required>
+                <span class="help-text">支持 JPG/PNG/GIF/WebP，最大 10MB</span>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary"> 上传照片</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 照片管理 -->
+      <div class="admin-card collapsed">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">照片管理</h2>
+        </div>
+        <div class="admin-card-body">
+          <% if (allPhotos.length === 0) { %>
+            <div class="empty-state"><p>还没有照片</p></div>
+          <% } else { %>
+            <div class="photo-manage-grid">
+              <% allPhotos.forEach(function(photo) { %>
+                <div class="photo-manage-item">
+                  <picture>
+                    <source srcset="<%= webpOf('/uploads/' + photo.filename) %>" type="image/webp">
+                    <img src="/uploads/<%= photo.filename %>" alt="<%= photo.title || '' %>" loading="lazy">
+                  </picture>
+                  <form method="POST" action="/admin/photo/<%= photo.id %>/delete" onsubmit="return confirm('确定删除？')">
+                    <button type="submit" class="photo-manage-delete">&times;</button>
+                  </form>
+                  <% if (photo.title) { %>
+                    <div class="photo-manage-caption"><%= photo.title %></div>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- 站点设置 -->
+      <div class="admin-card collapsed" id="settings">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">站点设置</h2>
+        </div>
+        <div class="admin-card-body">
+          <form method="POST" action="/admin/settings" enctype="multipart/form-data">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="site_name">站点名称</label>
+                <input type="text" id="site_name" name="site_name" value="<%= cfg.site_name || '' %>">
+              </div>
+              <div class="form-group">
+                <label for="bio">个人简介</label>
+                <input type="text" id="bio" name="bio" value="<%= cfg.bio || '' %>">
+              </div>
+            </div>
+
+
+            <div class="form-group">
+              <label for="avatar">头像</label>
+              <input type="file" id="avatar" name="avatar" accept="image/*">
+              <% if (cfg.about_avatar) { %>
+                <div class="avatar-preview">
+                  <img src="<%= cfg.about_avatar %>" alt="头像预览">
+                </div>
+              <% } %>
+            </div>
+
+            <div class="form-group">
+              <label for="about_me">关于我（支持 Markdown）</label>
+              <textarea id="about_me" name="about_me" rows="6"><%= cfg.about_me || '' %></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="skills">技能云标签（逗号分隔）</label>
+              <input type="text" id="skills" name="skills" value="<%= cfg.skills || '' %>" placeholder="例如：JavaScript, Node.js, Linux, 网络安全">
+              <span class="help-text">在关于页"技能栈"区域展示，用英文或中文逗号分隔均可</span>
+            </div>
+
+            <div class="form-group">
+              <label>经历时间线（关于页"经历"区域）</label>
+              <div id="timelineEditor">
+                <% var tl = []; try { tl = JSON.parse(cfg.timeline || '[]'); } catch(e) {} %>
+                <% tl.forEach(function(item) { %>
+                  <div class="timeline-edit-row">
+                    <input type="text" class="tl-date" placeholder="日期" value="<%= item.date %>">
+                    <input type="text" class="tl-title" placeholder="标题" value="<%= item.title %>">
+                    <input type="text" class="tl-desc" placeholder="描述" value="<%= item.desc %>">
+                    <button type="button" class="btn btn-sm btn-danger tl-del">删除</button>
+                  </div>
+                <% }) %>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="tlAdd">+ 添加一条经历</button>
+              <input type="hidden" name="timeline" id="timelineInput">
+              <span class="help-text">填写后保存，会按此顺序展示在关于页时间线</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" value="<%= cfg.email || '' %>">
+              </div>
+              <div class="form-group">
+                <label for="github">GitHub</label>
+                <input type="text" id="github" name="github" value="<%= cfg.github || '' %>" placeholder="https://github.com/你的用户名">
+              </div>
+            </div>
+
+            <h3 class="form-section-title">评论系统（Giscus）</h3>
+            <p class="help-text">基于 GitHub Discussions 的评论。需：① 一个<strong>公开</strong> GitHub 仓库；② 在该仓库安装 <a href="https://github.com/apps/giscus" target="_blank" rel="noopener">Giscus App</a>；③ 开启仓库 Discussions；④ 到 <a href="https://giscus.app" target="_blank" rel="noopener">giscus.app</a> 填入仓库后获取 Repo ID 与 Category ID。填写仓库后，文章页自动显示评论区。</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="giscus_repo">仓库 (owner/repo)</label>
+                <input type="text" id="giscus_repo" name="giscus_repo" value="<%= cfg.giscus_repo || '' %>" placeholder="例如：dazyz/dazyz.art">
+              </div>
+              <div class="form-group">
+                <label for="giscus_repo_id">仓库 ID</label>
+                <input type="text" id="giscus_repo_id" name="giscus_repo_id" value="<%= cfg.giscus_repo_id || '' %>" placeholder="giscus.app 提供的 Repo ID">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="giscus_category">讨论分类名</label>
+                <input type="text" id="giscus_category" name="giscus_category" value="<%= cfg.giscus_category || '' %>" placeholder="例如：General">
+              </div>
+              <div class="form-group">
+                <label for="giscus_category_id">分类 ID</label>
+                <input type="text" id="giscus_category_id" name="giscus_category_id" value="<%= cfg.giscus_category_id || '' %>" placeholder="giscus.app 提供的 Category ID">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="giscus_mapping">映射方式</label>
+                <select id="giscus_mapping" name="giscus_mapping">
+                  <option value="pathname" <%= (cfg.giscus_mapping || 'pathname') === 'pathname' ? 'selected' : '' %>>pathname（按路径，推荐）</option>
+                  <option value="url" <%= (cfg.giscus_mapping || '') === 'url' ? 'selected' : '' %>>url</option>
+                  <option value="title" <%= (cfg.giscus_mapping || '') === 'title' ? 'selected' : '' %>>title</option>
+                  <option value="og:title" <%= (cfg.giscus_mapping || '') === 'og:title' ? 'selected' : '' %>>og:title</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="giscus_lang">语言</label>
+                <input type="text" id="giscus_lang" name="giscus_lang" value="<%= cfg.giscus_lang || 'zh-CN' %>">
+              </div>
+            </div>
+
+            <hr class="form-divider">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="admin_username">管理员账号</label>
+                <input type="text" id="admin_username" name="admin_username" value="<%= cfg.admin_username || 'admin' %>">
+              </div>
+              <div class="form-group">
+                <label for="admin_password">管理员密码</label>
+                <input type="password" id="admin_password" name="admin_password" value="" autocomplete="new-password" placeholder="留空则不修改">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary"> 保存设置</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 友情链接 -->
+      <div class="admin-card collapsed" id="links">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">友情链接</h2>
+        </div>
+        <div class="admin-card-body">
+          <form method="POST" action="/admin/link" class="link-form">
+            <div class="form-group" style="flex:1;min-width:120px;">
+              <label>名称</label>
+              <input type="text" name="name" required>
+            </div>
+            <div class="form-group" style="flex:2;min-width:180px;">
+              <label>URL</label>
+              <input type="url" name="url" required>
+            </div>
+            <div class="form-group" style="flex:1;min-width:120px;">
+              <label>描述</label>
+              <input type="text" name="description">
+            </div>
+            <div class="form-group" style="min-width:80px;">
+              <label>排序</label>
+              <input type="number" name="sort_order" value="0">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="align-self:flex-end;">添加</button>
+          </form>
+
+          <% links.forEach(function(link) { %>
+            <div class="list-item">
+              <div class="list-item-info">
+                <a href="<%= link.url %>" target="_blank" class="list-item-title"><%= link.name %></a>
+                <span class="list-item-meta"><%= link.description %></span>
+              </div>
+              <form method="POST" action="/admin/link/<%= link.id %>/delete" onsubmit="return confirm('确定删除？')">
+                <button type="submit" class="btn btn-sm btn-danger">删除</button>
+              </form>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- 项目管理 -->
+      <div class="admin-card collapsed" id="projects">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">项目管理</h2>
+        </div>
+        <div class="admin-card-body">
+          <details class="collapse-form">
+            <summary>添加新项目</summary>
+            <form method="POST" action="/admin/project" enctype="multipart/form-data" class="collapse-form-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>标题</label>
+                  <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                  <label>封面图片</label>
+                  <input type="file" name="cover" accept="image/*">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>简介</label>
+                <input type="text" name="description">
+              </div>
+              <div class="form-group">
+                <label>详细内容 (Markdown)</label>
+                <textarea name="content" rows="3"></textarea>
+              </div>
+              <div class="form-row form-row-4">
+                <div class="form-group">
+                  <label>项目链接</label>
+                  <input type="url" name="url">
+                </div>
+                <div class="form-group">
+                  <label>GitHub</label>
+                  <input type="url" name="github">
+                </div>
+                <div class="form-group">
+                  <label>标签</label>
+                  <input type="text" name="tags" placeholder="Vue,Node.js">
+                </div>
+                <div class="form-group">
+                  <label>排序</label>
+                  <input type="number" name="sort_order" value="0">
+                </div>
+              </div>
+              <label class="checkbox-label">
+                <input type="checkbox" name="featured" value="1"> 首页精选展示
+              </label>
+              <button type="submit" class="btn btn-primary btn-sm">添加项目</button>
+            </form>
+          </details>
+
+          <% allProjects.forEach(function(p) { %>
+            <div class="list-item">
+              <div class="list-item-info">
+                <strong class="list-item-title"><%= p.title %></strong>
+                <span class="list-item-meta"><%= p.description %></span>
+                <% if (p.featured) { %><span class="tag">精选</span><% } %>
+              </div>
+              <form method="POST" action="/admin/project/<%= p.id %>/delete" onsubmit="return confirm('确定删除？')">
+                <button type="submit" class="btn btn-sm btn-danger">删除</button>
+              </form>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 个人空间管理后台</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('navToggle').addEventListener('click', function() {
+      document.getElementById('navMenu').classList.toggle('active');
+      this.classList.toggle('active');
+    });
+
+    // ===== 后台卡片折叠 =====
+    document.querySelectorAll('.admin-card-header').forEach(function(header) {
+      header.addEventListener('click', function(e) {
+        if (e.target.closest('.no-toggle')) return; // 按钮/链接不触发折叠
+        var card = header.closest('.admin-card');
+        if (card) card.classList.toggle('collapsed');
+      });
+    });
+
+    // ===== 模块快捷导航：平滑滚动 + 自动展开目标 =====
+    var jumps = document.querySelectorAll('.admin-jump');
+    jumps.forEach(function(j) {
+      j.addEventListener('click', function(e) {
+        e.preventDefault();
+        var id = j.getAttribute('href').slice(1);
+        var target = document.getElementById(id);
+        if (!target) return;
+        if (target.classList.contains('admin-card')) target.classList.remove('collapsed');
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        jumps.forEach(function(x) { x.classList.remove('active'); });
+        j.classList.add('active');
+      });
+    });
+
+    // ===== 经历时间线编辑器 =====
+    (function() {
+      var editor = document.getElementById('timelineEditor');
+      var input = document.getElementById('timelineInput');
+      var addBtn = document.getElementById('tlAdd');
+      if (!editor || !input) return;
+
+      function makeRow(date, title, desc) {
+        var row = document.createElement('div');
+        row.className = 'timeline-edit-row';
+        row.innerHTML =
+          '<input type="text" class="tl-date" placeholder="日期" value="' + (date || '') + '">' +
+          '<input type="text" class="tl-title" placeholder="标题" value="' + (title || '') + '">' +
+          '<input type="text" class="tl-desc" placeholder="描述" value="' + (desc || '') + '">' +
+          '<button type="button" class="btn btn-sm btn-danger tl-del">删除</button>';
+        row.querySelector('.tl-del').addEventListener('click', function() { row.remove(); });
+        editor.appendChild(row);
+      }
+
+      addBtn.addEventListener('click', function() { makeRow('', '', ''); });
+
+      // 提交表单前序列化
+      var form = input.closest('form');
+      if (form) {
+        form.addEventListener('submit', function() {
+          var items = [];
+          editor.querySelectorAll('.timeline-edit-row').forEach(function(row) {
+            var d = row.querySelector('.tl-date').value.trim();
+            var t = row.querySelector('.tl-title').value.trim();
+            var c = row.querySelector('.tl-desc').value.trim();
+            if (t || d) items.push({ date: d, title: t, desc: c });
+          });
+          input.value = JSON.stringify(items);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

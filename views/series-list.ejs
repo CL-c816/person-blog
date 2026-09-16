@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">系列：<%= series %></h1>
+    <p class="page-description">共 <%= posts.length %> 篇文章 · <a href="/series">全部系列</a></p>
+  </div>
+
+  <div class="article-list">
+    <% if (posts.length === 0) { %>
+      <div class="empty-state"><p>该系列下还没有文章</p></div>
+    <% } %>
+    <% posts.forEach(function(post, idx) { %>
+      <article class="article-list-card">
+        <% if (post.cover) { %>
+          <a href="/blog/<%= post.id %>" class="article-list-cover">
+            <picture>
+              <source srcset="<%= webpOf(post.cover) %>" type="image/webp">
+              <img src="<%= post.cover %>" alt="<%= post.title %>" loading="lazy">
+            </picture>
+          </a>
+        <% } %>
+        <div class="article-list-body">
+          <div class="article-list-breadcrumb">
+            <span class="post-series">第 <%= idx + 1 %> 篇 / 共 <%= posts.length %> 篇</span>
+          </div>
+          <h3 class="article-list-title"><a href="/blog/<%= post.id %>"><%= post.title %></a></h3>
+          <p class="article-list-excerpt"><%= excerpt(post.content, 60) %></p>
+          <div class="article-list-meta">
+            <span><%= new Date(post.created_at + 'Z').toLocaleDateString('zh-CN') %></span>
+            <span><%= post.views %> 次阅读</span>
+            <span class="reading-time"><%= Math.max(1, Math.ceil((post.content || '').length / 400)) %> 分钟</span>
+          </div>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</div>
+<%- include('partials/footer') %>
