@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+<div class="container">
+  <div class="article-breadcrumb" style="padding-top: 24px;">
+    <a href="/">首页</a>
+    <span>/</span>
+    <span class="article-breadcrumb-current">相册</span>
+  </div>
+
+  <div class="page-header">
+    <h1 class="page-title">相册</h1>
+  </div>
+
+  <div class="photo-grid">
+    <% if (photos.length === 0) { %>
+      <div class="empty-state"><p>还没有照片</p></div>
+    <% } %>
+    <% photos.forEach(function(photo) { %>
+      <div class="photo-card">
+        <a href="/album/<%= photo.id %>">
+          <div class="photo-card-image">
+            <picture>
+              <source srcset="<%= webpOf('/uploads/' + photo.filename) %>" type="image/webp">
+              <img src="/uploads/<%= photo.filename %>" alt="<%= photo.title || '照片' %>" loading="lazy">
+            </picture>
+            <div class="photo-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-4.89 4.88 1.41 1.41L18.7 6.7 21 9V3zM3 9l2.3-2.3 4.88 4.89 1.41-1.41L6.7 5.3 9 3H3zm6 12l-2.3-2.3 4.89-4.88-1.41-1.41L5.3 17.3 3 15v6zm12-6l-2.3 2.3-4.88-4.89-1.41 1.41 4.89 4.88L15 21h6z"/></svg>
+            </div>
+            <div class="photo-card-overlay"><span><%= photo.title || '点击查看' %></span></div>
+          </div>
+        </a>
+      </div>
+    <% }) %>
+  </div>
+</div>
+<%- include('partials/footer') %>

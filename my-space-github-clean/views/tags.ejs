@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+<div class="container tags-page">
+  <header class="page-head">
+    <h1 class="section-title">标签云</h1>
+    <p class="page-sub">点击标签筛选文章</p>
+  </header>
+  <div class="tag-cloud">
+    <% tagList.forEach(function(t) { %>
+      <a href="/tags/<%= encodeURIComponent(t.name) %>" class="tag-cloud-item" style="font-size:<%= t.size %>rem;">
+        <%= t.name %> <span class="tag-count"><%= t.count %></span>
+      </a>
+    <% }) %>
+  </div>
+  <% if (tagList.length === 0) { %>
+    <p class="empty-state">还没有标签。</p>
+  <% } %>
+</div>
+<%- include('partials/footer') %>

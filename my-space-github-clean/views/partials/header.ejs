@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>周珩的小栈</title>
+  <link rel="icon" type="image/png" href="/uploads/avatar.png">
+  <link rel="stylesheet" href="/css/style.css?v=20260906a">
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml">
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="canonical" href="<%= siteUrl %><%= currentPath %>">
+  <% var pageDesc = (locals.post && post.content) ? excerpt(post.content, 90) : ((config && config.bio) || '记录生活，分享技术'); %>
+  <meta name="description" content="<%= pageDesc %>">
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= (locals.post ? (post.summary || (post.content || '').replace(/<[^>]+>/g, '').slice(0, 120)) : (pageDesc || '')) %>">
+  <meta property="og:type" content="<%= (locals.post ? 'article' : 'website') %>">
+  <meta property="og:site_name" content="周珩的小栈">
+  <meta property="og:image" content="<%= locals.post ? siteUrl + '/og/' + post.id : siteUrl + '/uploads/avatar.png' %>">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= title %>">
+  <meta name="twitter:description" content="<%= pageDesc %>">
+  <meta name="twitter:image" content="<%= locals.post ? siteUrl + '/og/' + post.id : siteUrl + '/uploads/avatar.png' %>">
+</head>
+<body>
+  <script>(function(){try{var t=localStorage.getItem('theme')||'auto';var m=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t==='auto'&&m))document.documentElement.classList.add('dark');}catch(e){}})();</script>
+  <a href="#main" class="skip-link">跳到主要内容</a>
+  <nav class="navbar" id="navbar">
+    <div class="container nav-container">
+      <div class="nav-left">
+        <button class="nav-toggle" id="navToggle" aria-label="菜单">
+          <span></span><span></span><span></span>
+        </button>
+        <a href="/" class="nav-logo">周珩的小栈</a>
+      </div>
+
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="/blog" class="nav-link <%= currentPath && currentPath.startsWith('/blog') ? 'active' : '' %>">文章</a></li>
+        <li><a href="/about" class="nav-link <%= currentPath === '/about' ? 'active' : '' %>">个人</a></li>
+        <li><a href="/projects" class="nav-link <%= currentPath && currentPath.startsWith('/projects') ? 'active' : '' %>">项目</a></li>
+        <li><a href="/album" class="nav-link <%= currentPath && currentPath.startsWith('/album') ? 'active' : '' %>">相册</a></li>
+        <li><a href="/archive" class="nav-link <%= currentPath && currentPath.startsWith('/archive') ? 'active' : '' %>">归档</a></li>
+        <li><a href="/category" class="nav-link <%= currentPath && currentPath.startsWith('/category') ? 'active' : '' %>">分类</a></li>
+        <li><a href="/series" class="nav-link <%= currentPath && currentPath.startsWith('/series') ? 'active' : '' %>">系列</a></li>
+        <li><a href="/tags" class="nav-link <%= currentPath && currentPath.startsWith('/tags') ? 'active' : '' %>">标签</a></li>
+        <% if (isAdmin) { %>
+          <li><a href="/admin" class="nav-link nav-admin">管理</a></li>
+        <% } %>
+      </ul>
+
+      <div class="nav-right">
+        <form class="nav-search" id="navSearchForm" action="/blog" method="GET">
+          <input type="text" name="search" class="nav-search-input" id="navSearchInput" placeholder="搜索文章..." aria-label="搜索文章">
+          <button type="button" class="nav-search-btn" id="navSearchBtn" aria-label="搜索">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+          </button>
+        </form>
+        <button class="dark-toggle" id="darkToggle" aria-label="暗黑模式" title="切换暗黑模式">☾</button>
+      </div>
+    </div>
+  </nav>
+  <main class="main-content" id="main">

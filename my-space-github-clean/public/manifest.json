@@ -1,0 +1,19 @@
+{
+  "name": "周珩的小栈",
+  "short_name": "周珩的小栈",
+  "description": "记录生活，分享技术",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f6fa",
+  "theme_color": "#6674b7",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
