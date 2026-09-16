@@ -1,7 +1,6 @@
 # 🏠 my-space · 个人博客 / 个人空间站
 
 基于 **Node.js + Express 5 + EJS + SQLite** 的轻量个人网站，单机可跑、依赖极少、自带安全加固。
-线上实例：<https://dazyz.art>
 
 ---
 
